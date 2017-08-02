@@ -1,0 +1,24 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport"
+          content="width=device-width,initial-scale=1,minimum-scale=1,maximum-scale=1,user-scalable=no"/>
+    <title>Multistage linkage</title>
+    <link rel="stylesheet" href="./nui-data-picker.min.css">
+</head>
+<body>
+<script src="./nui-data-picker.min.js"></script>
+<script>
+    new NuiPicker([
+        {data: ['提前一个月', '提前一周', '提前三天', '提前一天', '体检当天']},
+        {data: ['01', '02', '03', '04', '05', '06', '07', '08', '09', '10', '11', '12'], title: '时'},
+        {data: ['01', '02', '03', '04', '05', '06', '07', '08', '09', '10', '11', '12'], title: '分'}
+    ], {
+        confirmCallback: function () {
+            console.log('-----------')
+        }
+    });
+</script>
+</body>
+</html>

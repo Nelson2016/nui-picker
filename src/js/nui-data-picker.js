@@ -13,12 +13,12 @@ import '../less/nui-data-picker.less'
 
 class NuiPicker {
 
-    // _prefix = () => ['', 'webkit', 'moz', 'ms', 'o'];
 
     constructor(data, options) {
 
         if (!('ontouchstart' in window)) {
-            console.error('仅支持移动端浏览器!')
+            console.error('仅支持移动端浏览器!');
+            return;
         }
 
         options = options || {};
@@ -51,7 +51,6 @@ class NuiPicker {
         //处理自定义参数
         this.options = Object.assign(options, defaultOptions);
         this.data = data || [];
-        this.canScroll = true;
 
         this.createDoms();
         this.bindEvt();
@@ -168,7 +167,6 @@ class NuiPicker {
             item.addEventListener('touchstart', function (e) {
                 e.stopPropagation();
                 start = Date.now();
-                // startX = e.touches[0].clientX;
                 startY = e.touches[0].clientY;
                 temp = startY;
             })
@@ -179,7 +177,6 @@ class NuiPicker {
                 temp = e.changedTouches[0].clientY;
             })
             item.addEventListener('touchend', function (e) {
-                // endX = e.changedTouches[0].clientX;
                 let allDistance = e.changedTouches[0].clientY - startY
                 let direction = allDistance > 0 ? -1 : 1;
 
@@ -229,9 +226,6 @@ class NuiPicker {
             }
         }, 2)
     };
-    goEnd = () => {
-
-    };
     /**
      * @description 惯性归位
      * @param dom   滚动DOM
@@ -278,17 +272,15 @@ class NuiPicker {
                         }
                     }
                     _this.toBoundary(dom, end, direction);
-                    // this.inertia(dom, allDistance, start, end, direction);
                 }
             }
 
             speed--;
         }, 10)
-        // console.log(this.getSpeed(distance, start, end));
     };
     /**
      * @description 计算瞬间速度
-     * @param distance  瞬间位移
+     * @param allDistance  瞬间位移
      * @param start 位移开始时间
      * @param end   位移结束时间
      */
@@ -297,7 +289,7 @@ class NuiPicker {
     };
     /**
      * @description 跟随滚动
-     * @param item  跟随的DOM
+     * @param dom  跟随的DOM
      * @param distance  滚动的距离
      */
     scroll = (dom, distance) => {
@@ -322,13 +314,16 @@ class NuiPicker {
 
         return true;
     };
+    /**
+     * @description 设置选中状态
+     * @param dom   滚动DOM
+     */
     modifyActive = (dom) => {
         let domOffsetTop = dom.offsetTop - this.options.padding;
         let diff = this.options.item.height * 2.5 - domOffsetTop
 
         let items = dom.children;
         let activeIndex = Math.floor(diff / this.options.item.height);
-        console.log(items.length)
         if(activeIndex > items.length - 1){
             activeIndex = items.length - 1
         }else if(activeIndex < 0){
