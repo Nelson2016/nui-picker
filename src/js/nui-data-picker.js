@@ -63,15 +63,32 @@ class NuiPicker {
      */
     createClassName = () => {
         this._picker = 'nui-date-picker';
-        [this._container, this._inner, this._scroll, this._fix, this._confirm] = [
+        [this._container, this._inner, this._scroll, this._fix, this._confirm, this._mask] = [
             this._picker + '-container',
             this._picker + '-inner',
             this._picker + '-scroll',
             this._picker + '-fix',
-            this._picker + '-confirm'
+            this._picker + '-confirm',
+            this._picker + '-mask'
         ];
     };
+    /**
+     * @description 打开选择器
+     */
+    open = () => {
+        this.picker.style.opacity = 1;
+        this.picker.style.mozOpacity = 1;
+        this.picker.style.top = 0;
 
+    };
+    /**
+     * @description 关闭选择器
+     */
+    hide = () => {
+        this.picker.style.opacity = 0;
+        this.picker.style.mozOpacity = 0;
+        this.picker.style.top = '100%';
+    };
     /**
      * @description 初始化DOM结构
      */
@@ -80,6 +97,7 @@ class NuiPicker {
         //初始化容器
         let picker = document.createElement('div');
         picker.className = this._picker;
+        picker.id = this._picker;
 
         let options = this.options;
         let confirmOptions = options.confirm;
@@ -113,10 +131,10 @@ class NuiPicker {
         ];
 
 
-        let scrollHtml = ['<div id="nui-date-picker-container" class="nui-date-picker-container" style="' + panelStyle + '"><div class="nui-date-picker-inner">'];
+        let scrollHtml = ['<div class="' + this._mask + '" id="' + this._mask + '"></div>', '<div id="' + this._container + '" class="' + this._container + '" style="' + panelStyle + '"><div class="' + this._inner + '">'];
 
         let titles = 0;
-        for(let titleCount = 0 ; titleCount < this.data.length ; titleCount++){
+        for (let titleCount = 0; titleCount < this.data.length; titleCount++) {
             this.data[titleCount].title && titles++;
         }
 
@@ -125,22 +143,23 @@ class NuiPicker {
         this.data.map(scrollItems => {
 
             let scrollItemsData = scrollItems.data || [];
-            let scrollItem = '<div class="nui-date-picker-scroll"><ul style="width: ' + scrollDomWidth + 'px;">';
+            let scrollItem = '<div class="' + this._scroll + '"><ul style="width: ' + scrollDomWidth + 'px;">';
             let items = scrollItemsData.map(item => '<li style="' + itemStyle + '"><span>' + item + '</span></li>')
 
             scrollItem += items.join('')
             scrollItem += '</ul></div>';
-            scrollItems.title && (scrollItem += '<div class="nui-date-picker-fix"><span style="' + fixStyle + '">' + scrollItems.title + '</span></div>') && (titles++);
+            scrollItems.title && (scrollItem += '<div class="' + this._fix + '"><span style="' + fixStyle + '">' + scrollItems.title + '</span></div>') && (titles++);
 
             scrollHtml.push(scrollItem);
         });
 
 
-
-        scrollHtml.push('</div></div><button id="nui-date-picker-confirm" class="nui-date-picker-confirm" style="' + confirmStyle + '">确定</button>');
+        scrollHtml.push('</div></div><button id="' + this._confirm + '" class="' + this._confirm + '" style="' + confirmStyle + '">确定</button>');
         picker.innerHTML = scrollHtml.join('');
 
         document.body.appendChild(picker);
+        this.picker = document.getElementById(this._picker);
+        picker = null;
 
     };
     /**
@@ -148,6 +167,7 @@ class NuiPicker {
      */
     bindEvt = () => {
         this.confirmEvt();
+        this.closeEvt();
         this.bindScroll();
     };
 
@@ -324,9 +344,9 @@ class NuiPicker {
 
         let items = dom.children;
         let activeIndex = Math.floor(diff / this.options.item.height);
-        if(activeIndex > items.length - 1){
+        if (activeIndex > items.length - 1) {
             activeIndex = items.length - 1
-        }else if(activeIndex < 0){
+        } else if (activeIndex < 0) {
             activeIndex = 0;
         }
         items[activeIndex].style.fontSize = this.options.item.size + 'px';
@@ -346,22 +366,35 @@ class NuiPicker {
      * @description 确定按钮事件绑定
      */
     confirmEvt = () => {
-        let [_this, start, startX, startY, confirmBtn] = [this, 0, 0, 0, document.getElementById('nui-date-picker-confirm')];
+        this.tap(document.getElementById(this._confirm), this.options.confirmCallback);
+    };
+    /**
+     * @description 遮罩层点击事件绑定
+     */
+    closeEvt = () => {
+        this.tap(document.getElementById(this._mask), this.hide);
+    };
+    /**
+     * @description 简单的tap点击事件
+     * @param dom 点击的元素
+     * @param callback 点击响应事件
+     */
+    tap = (dom, callback) => {
+        let [start, startX, startY] = [0, 0, 0];
 
-        confirmBtn.addEventListener('touchstart', function (e) {
+        dom.addEventListener('touchstart', function (e) {
             e.stopPropagation();
             start = Date.now();
             startX = e.touches[0].clientX;
             startY = e.touches[0].clientY;
         })
-        confirmBtn.addEventListener('touchend', function (e) {
+        dom.addEventListener('touchend', function (e) {
             e.stopPropagation();
             if (Math.abs(e.changedTouches[0].clientX - startX) <= 10 && Math.abs(e.changedTouches[0].clientY - startY) <= 10 && Date.now() - start <= 200) {
-                _this.options.confirmCallback();
+                callback();
             }
         })
     };
-
     /**
      * @description 计算css字符串并返回
      * @param style css键值对

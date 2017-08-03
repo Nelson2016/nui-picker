@@ -64,6 +64,7 @@
          */
         bindEvt: function () {
             this.confirmEvt();
+            this.closeEvt();
             this.bindScroll();
         },
         /**
@@ -76,6 +77,24 @@
             this._scroll = this._picker + '-scroll';
             this._fix = this._picker + '-fix';
             this._confirm = this._picker + '-confirm';
+            this._mask = this._picker + '-mask'
+        },
+        /**
+         * @description 打开选择器
+         */
+        open: function () {
+            this.picker.style.opacity = 1;
+            this.picker.style.mozOpacity = 1;
+            this.picker.style.top = 0;
+
+        },
+        /**
+         * @description 关闭选择器
+         */
+        hide: function () {
+            this.picker.style.opacity = 0;
+            this.picker.style.mozOpacity = 0;
+            this.picker.style.top = '100%';
         },
         /**
          * @description 初始化DOM结构
@@ -85,6 +104,7 @@
             //初始化容器
             var picker = document.createElement('div');
             picker.className = this._picker;
+            picker.id = this._picker;
 
             var options = this.options;
             var confirmOptions = options.confirm;
@@ -116,7 +136,7 @@
             });
 
 
-            var scrollHtml = ['<div id="nui-date-picker-container" class="nui-date-picker-container" style="' + panelStyle + '"><div class="nui-date-picker-inner">'];
+            var scrollHtml = ['<div class="' + this._mask + '" id="' + this._mask + '"></div>', '<div id="' + this._container + '" class="' + this._container + '" style="' + panelStyle + '"><div class="' + this._inner + '">'];
 
             var titles = 0;
             for (var titleCount = 0; titleCount < this.data.length; titleCount++) {
@@ -128,7 +148,7 @@
             for (var scrollItemIndex = 0; scrollItemIndex < this.data.length; scrollItemIndex++) {
                 var scrollItems = this.data[scrollItemIndex];
                 var scrollItemsData = scrollItems.data || [];
-                var scrollItem = '<div class="nui-date-picker-scroll"><ul style="width: ' + scrollDomWidth + 'px;">';
+                var scrollItem = '<div class="' + this._scroll + '"><ul style="width: ' + scrollDomWidth + 'px;">';
 
                 var items = [];
 
@@ -138,17 +158,20 @@
 
                 scrollItem += items.join('')
                 scrollItem += '</ul></div>';
-                scrollItems.title && (scrollItem += '<div class="nui-date-picker-fix"><span style="' + fixStyle + '">' + scrollItems.title + '</span></div>') && (titles++);
+                scrollItems.title && (scrollItem += '<div class="' + this._fix + '"><span style="' + fixStyle + '">' + scrollItems.title + '</span></div>') && (titles++);
 
                 scrollHtml.push(scrollItem);
             }
 
-            scrollHtml.push('</div></div><button id="nui-date-picker-confirm" class="nui-date-picker-confirm" style="' + confirmStyle + '">确定</button>');
+            scrollHtml.push('</div></div><button id="' + this._confirm + '" class="' + this._confirm + '" style="' + confirmStyle + '">确定</button>');
             picker.innerHTML = scrollHtml.join('');
 
             document.body.appendChild(picker);
 
-        },
+            this.picker = document.getElementById(this._picker);
+            picker = null;
+        }
+        ,
         /**
          * @description 绑定滚动事件
          */
@@ -183,7 +206,8 @@
                     })
                 })(index)
             }
-        },
+        }
+        ,
         /**
          * @description 计算瞬间速度
          * @param allDistance  瞬间位移
@@ -192,7 +216,8 @@
          */
         getSpeed: function (allDistance, start, end) {
             return (Math.abs(allDistance) / (end - start)) || 0;
-        },
+        }
+        ,
         /**
          * @description 跟随滚动
          * @param dom  跟随的DOM
@@ -205,7 +230,8 @@
             dom.style.top = dom.offsetTop - this.options.padding + distance + 'px';
 
             this.modifyActive(dom);
-        },
+        }
+        ,
         /**
          * @description 判断是否可跟随滚动
          */
@@ -219,7 +245,8 @@
             }
 
             return true;
-        },
+        }
+        ,
         /**
          * @description 手指离开屏幕时停止滚动
          * @param dom   滚动的DOM
@@ -240,7 +267,8 @@
             } else {
                 this.inertia(dom, allDistance, start, end, direction);
             }
-        },
+        }
+        ,
         /**
          * @description 滚动归位
          * @param dom   滚动的DOM
@@ -261,7 +289,8 @@
                     dom.style.top = position + 'px';
                 }
             }, 2)
-        },
+        }
+        ,
         /**
          * @description 惯性归位
          * @param dom   滚动DOM
@@ -313,7 +342,8 @@
 
                 speed--;
             }, 10)
-        },
+        }
+        ,
         /**
          * @description 设置选中状态
          * @param dom   滚动DOM
@@ -341,27 +371,43 @@
             items[activeIndex + 2] && (items[activeIndex + 2].style.opacity = 1 - this.options.opacityDif * 2);
             items[activeIndex - 2] && (items[activeIndex - 2].style.opacity = 1 - this.options.opacityDif * 2);
 
-        },
+        }
+        ,
         /**
          * @description 确定按钮事件绑定
          */
         confirmEvt: function () {
-            var _this = this, start = 0, startX = 0, startY = 0,
-                confirmBtn = document.getElementById('nui-date-picker-confirm');
+            this.tap(document.getElementById(this._confirm), this.options.confirmCallback);
+        },
 
-            confirmBtn.addEventListener('touchstart', function (e) {
+        /**
+         * @description 遮罩层点击事件绑定
+         */
+        closeEvt: function () {
+            this.tap(document.getElementById(this._mask), this.hide);
+        },
+        /**
+         * @description 简单的tap点击事件
+         * @param dom 点击的元素
+         * @param callback 点击响应事件
+         */
+        tap: function (dom, callback) {
+            var start = 0, startX = 0, startY = 0, _this = this;
+
+            dom.addEventListener('touchstart', function (e) {
                 e.stopPropagation();
                 start = Date.now();
                 startX = e.touches[0].clientX;
                 startY = e.touches[0].clientY;
             })
-            confirmBtn.addEventListener('touchend', function (e) {
+            dom.addEventListener('touchend', function (e) {
                 e.stopPropagation();
                 if (Math.abs(e.changedTouches[0].clientX - startX) <= 10 && Math.abs(e.changedTouches[0].clientY - startY) <= 10 && Date.now() - start <= 200) {
-                    _this.options.confirmCallback();
+                    callback.call(_this);
                 }
             })
         },
+
         /**
          * @description 计算css字符串并返回
          * @param style css键值对
@@ -380,7 +426,8 @@
                 }
             }
             return cssStr;
-        },
+        }
+        ,
         /**
          * @description 单位换算
          * @param value px单位值

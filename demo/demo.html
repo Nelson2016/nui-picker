@@ -8,9 +8,10 @@
     <link rel="stylesheet" href="./nui-data-picker.min.css">
 </head>
 <body>
+<button id="open">打开</button>
 <script src="./nui-data-picker.min.js"></script>
 <script>
-    new NuiPicker([
+    var NP = new NuiPicker([
         {data: ['提前一个月', '提前一周', '提前三天', '提前一天', '体检当天']},
         {data: ['01', '02', '03', '04', '05', '06', '07', '08', '09', '10', '11', '12'], title: '时'},
         {data: ['01', '02', '03', '04', '05', '06', '07', '08', '09', '10', '11', '12'], title: '分'}
@@ -19,6 +20,9 @@
             console.log('-----------')
         }
     });
+    document.getElementById('open').onclick = function () {
+        NP.open()
+    }
 </script>
 </body>
 </html>
