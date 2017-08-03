@@ -122,7 +122,8 @@ class NuiPicker {
             }),
             this.mathCssStr({
                 'height': this.panelInnerHeight,
-                'line-height': this.panelInnerHeight
+                'line-height': this.panelInnerHeight,
+                'font-size':options.title.size
             }),
             this.mathCssStr({
                 'height': confirmOptions.height,
@@ -147,7 +148,7 @@ class NuiPicker {
 
             let scrollItemsData = scrollItems.data || [];
             let scrollItem = '<div class="' + this._scroll + '"><ul style="width: ' + scrollDomWidth + 'px;">';
-            let items = scrollItemsData.map(item => '<li style="' + itemStyle + '"><span style="' + itemStyle + '">' + item + '</span></li>')
+            let items = scrollItemsData.map(item => '<li style="' + itemStyle + '"><span>' + item + '</span></li>')
 
             scrollItem += items.join('')
             scrollItem += '</ul></div>';

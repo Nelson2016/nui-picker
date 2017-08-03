@@ -127,7 +127,8 @@
             });
             var fixStyle = this.mathCssStr({
                 'height': this.panelInnerHeight,
-                'line-height': this.panelInnerHeight
+                'line-height': this.panelInnerHeight,
+                'font-size':options.title.size
             });
             var confirmStyle = this.mathCssStr({
                 'height': confirmOptions.height,
@@ -155,7 +156,7 @@
                 var items = [];
 
                 for (var dataIndex = 0; dataIndex < scrollItemsData.length; dataIndex++) {
-                    items.push('<li style="' + itemStyle + '"><span style="' + itemStyle + '">' + scrollItemsData[dataIndex] + '</span></li>')
+                    items.push('<li style="' + itemStyle + '"><span>' + scrollItemsData[dataIndex] + '</span></li>')
                 }
 
                 scrollItem += items.join('')
