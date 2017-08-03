@@ -122,7 +122,8 @@
             });
             var itemStyle = this.mathCssStr({
                 'height': itemHeight,
-                'line-height': itemHeight
+                'line-height': itemHeight,
+                'font-size':options.item.size
             });
             var fixStyle = this.mathCssStr({
                 'height': this.panelInnerHeight,
@@ -154,7 +155,7 @@
                 var items = [];
 
                 for (var dataIndex = 0; dataIndex < scrollItemsData.length; dataIndex++) {
-                    items.push('<li style="' + itemStyle + '"><span>' + scrollItemsData[dataIndex] + '</span></li>')
+                    items.push('<li style="' + itemStyle + '"><span style="' + itemStyle + '">' + scrollItemsData[dataIndex] + '</span></li>')
                 }
 
                 scrollItem += items.join('')
