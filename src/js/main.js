@@ -20,6 +20,10 @@ let NP =  new NuiPicker([
 ], {
     confirmCallback: function (resultArr) {
         console.log('-----------' + JSON.stringify(resultArr))
+    },
+    closeCallback: function () {
+        console.log('close');
+        NP.hide();
     }
 });
 

@@ -18,6 +18,10 @@
     ], {
         confirmCallback: function (resultArr) {
             console.log('-----------' + JSON.stringify(resultArr))
+        },
+        closeCallback:function(){
+            this.hide();
+            console.log('close');
         }
     });
     document.getElementById('open').onclick = function () {

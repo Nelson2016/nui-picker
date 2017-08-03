@@ -50,6 +50,7 @@
 
         //处理自定义参数
         this.options = extend(defaultOptions, options);
+        this.options.closeCallback = this.options.closeCallback || function(){};
         this.data = data || [];
         this.result = [];
 
@@ -392,7 +393,7 @@
          * @description 遮罩层点击事件绑定
          */
         closeEvt: function () {
-            this.tap(document.getElementById(this._mask), this.hide);
+            this.tap(document.getElementById(this._mask), this.options.closeCallback);
         },
         /**
          * @description 简单的tap点击事件
