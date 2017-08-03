@@ -16,8 +16,8 @@
         {data: ['01', '02', '03', '04', '05', '06', '07', '08', '09', '10', '11', '12'], title: '时'},
         {data: ['01', '02', '03', '04', '05', '06', '07', '08', '09', '10', '11', '12'], title: '分'}
     ], {
-        confirmCallback: function () {
-            console.log('-----------')
+        confirmCallback: function (resultArr) {
+            console.log('-----------' + JSON.stringify(resultArr))
         }
     });
     document.getElementById('open').onclick = function () {

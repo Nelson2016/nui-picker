@@ -51,6 +51,7 @@ class NuiPicker {
         //处理自定义参数
         this.options = Object.assign(options, defaultOptions);
         this.data = data || [];
+        this.result = [];
 
         this.createDoms();
         this.bindEvt();
@@ -181,7 +182,7 @@ class NuiPicker {
             let item = scrollDoms[index];
             let scrollDom = item.children[0];
 
-            _this.modifyActive(scrollDom);
+            _this.modifyActive(scrollDom, index);
 
             let [start, startX, startY, endX, endY, distance, temp] = [0, 0, 0, 0, 0, 0, 0];
             item.addEventListener('touchstart', function (e) {
@@ -193,14 +194,14 @@ class NuiPicker {
             item.addEventListener('touchmove', function (e) {
                 e.stopPropagation();
                 distance = e.changedTouches[0].clientY - temp;
-                _this.scroll(scrollDom, distance);
+                _this.scroll(scrollDom, distance, index);
                 temp = e.changedTouches[0].clientY;
             })
             item.addEventListener('touchend', function (e) {
                 let allDistance = e.changedTouches[0].clientY - startY
                 let direction = allDistance > 0 ? -1 : 1;
 
-                _this.endScroll(scrollDom, distance, start, Date.now(), direction, allDistance);
+                _this.endScroll(scrollDom, distance, start, Date.now(), direction, allDistance, index);
             })
         }
     };
@@ -212,17 +213,18 @@ class NuiPicker {
      * @param end   触摸结束
      * @param direction 滚动方向
      * @param allDistance 手指划过的距离
+     * @param index 当前滚动DOM的索引
      */
-    endScroll = (dom, distance, start, end, direction, allDistance) => {
+    endScroll = (dom, distance, start, end, direction, allDistance, index) => {
         if (this.checkScroll(dom, dom.offsetTop + distance) !== true) {
             if (direction === -1) {
-                this.toBoundary(dom, this.topBoundary, direction);
+                this.toBoundary(dom, this.topBoundary, direction, index);
             } else if (direction === 1) {
                 let bottomBoundary = dom.offsetHeight - this.halfPanelHeight - this.halfItemHeight;
-                this.toBoundary(dom, -bottomBoundary, direction);
+                this.toBoundary(dom, -bottomBoundary, direction, index);
             }
         } else {
-            this.inertia(dom, allDistance, start, end, direction);
+            this.inertia(dom, allDistance, start, end, direction, index);
         }
     };
     /**
@@ -230,15 +232,16 @@ class NuiPicker {
      * @param dom   滚动的DOM
      * @param position  目标位置
      * @param direction 方向数据
+     * @param index 当前滚动DOM的索引
      */
-    toBoundary = (dom, position, direction) => {
+    toBoundary = (dom, position, direction, index) => {
         let _this = this;
         let toBoundaryInterval = setInterval(function () {
             let nextStep = dom.offsetTop + direction * 1 - _this.options.padding;
 
             dom.style.top = nextStep + 'px';
 
-            _this.modifyActive(dom);
+            _this.modifyActive(dom, index);
 
             if ((direction < 0 && nextStep <= position) || (direction > 0 && nextStep >= position)) {
                 clearInterval(toBoundaryInterval);
@@ -253,8 +256,9 @@ class NuiPicker {
      * @param start 触摸开始
      * @param end   触摸结束
      * @param direction 滚动方向
+     * @param index 当前滚动DOM的索引
      */
-    inertia = (dom, allDistance, start, end, direction) => {
+    inertia = (dom, allDistance, start, end, direction, index) => {
         let _this = this;
         let speed = this.getSpeed(allDistance, start, end) * 12;
         let inertiaInterval = setInterval(function () {
@@ -262,16 +266,16 @@ class NuiPicker {
 
             dom.style.top = nextStep + 'px';
 
-            _this.modifyActive(dom);
+            _this.modifyActive(dom, index);
 
             if (speed <= .5) {
                 clearInterval(inertiaInterval);
                 if (_this.checkScroll(dom, dom.offsetTop) !== true) {
                     if (direction === -1) {
-                        _this.toBoundary(dom, _this.topBoundary, direction);
+                        _this.toBoundary(dom, _this.topBoundary, direction, index);
                     } else if (direction === 1) {
                         let bottomBoundary = dom.offsetHeight - _this.halfPanelHeight - _this.halfItemHeight;
-                        _this.toBoundary(dom, -bottomBoundary, direction);
+                        _this.toBoundary(dom, -bottomBoundary, direction, index);
                     }
                 } else {
                     let current = dom.offsetTop - _this.options.padding;
@@ -291,7 +295,7 @@ class NuiPicker {
                             end = _this.options.item.height * Math.ceil(_justFine);
                         }
                     }
-                    _this.toBoundary(dom, end, direction);
+                    _this.toBoundary(dom, end, direction, index);
                 }
             }
 
@@ -311,14 +315,15 @@ class NuiPicker {
      * @description 跟随滚动
      * @param dom  跟随的DOM
      * @param distance  滚动的距离
+     * @param index 当前滚动DOM的索引
      */
-    scroll = (dom, distance) => {
+    scroll = (dom, distance, index) => {
 
         distance = this.checkScroll(dom, dom.offsetTop + distance) === null ? distance : distance / 3;
 
         dom.style.top = dom.offsetTop - this.options.padding + distance + 'px';
 
-        this.modifyActive(dom);
+        this.modifyActive(dom, index);
     };
     /**
      * @description 判断是否可跟随滚动
@@ -338,7 +343,8 @@ class NuiPicker {
      * @description 设置选中状态
      * @param dom   滚动DOM
      */
-    modifyActive = (dom) => {
+    modifyActive = (dom, index) => {
+
         let domOffsetTop = dom.offsetTop - this.options.padding;
         let diff = this.options.item.height * 2.5 - domOffsetTop
 
@@ -349,6 +355,9 @@ class NuiPicker {
         } else if (activeIndex < 0) {
             activeIndex = 0;
         }
+
+        this.result[index] = items[activeIndex].innerText;
+
         items[activeIndex].style.fontSize = this.options.item.size + 'px';
         items[activeIndex].style.opacity = 1;
         items[activeIndex + 1] && (items[activeIndex + 1].style.fontSize = this.options.item.size - this.options.sizeDif + 'px');
@@ -380,7 +389,7 @@ class NuiPicker {
      * @param callback 点击响应事件
      */
     tap = (dom, callback) => {
-        let [start, startX, startY] = [0, 0, 0];
+        let [start, startX, startY, _this] = [0, 0, 0, this];
 
         dom.addEventListener('touchstart', function (e) {
             e.stopPropagation();
@@ -391,7 +400,7 @@ class NuiPicker {
         dom.addEventListener('touchend', function (e) {
             e.stopPropagation();
             if (Math.abs(e.changedTouches[0].clientX - startX) <= 10 && Math.abs(e.changedTouches[0].clientY - startY) <= 10 && Date.now() - start <= 200) {
-                callback();
+                callback(_this.result);
             }
         })
     };
